@@ -15,9 +15,9 @@ The Arduino Stopwatch Library provides the following features:
 
 Follow this steps:
 
-1. Download the latest version of the library from the GitHub repository.
-2. Open the Arduino IDE and select `Sketch` > `Include Library` > `Add .ZIP Library`.
-3. Select the downloaded ZIP file and click `Open`.
+1. **Download** the latest version of the library from the [GitHub repository](https://github.com/Louishattiger/cronoLibrary).
+2. **Open** the Arduino IDE and select `Sketch` > `Include Library` > `Add .ZIP Library`.
+3. **Select** the downloaded ZIP file and click `Open`.
 4. The library should now be installed and ready to use in your project.
 
 ## Usage
