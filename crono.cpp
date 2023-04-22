@@ -17,11 +17,13 @@
 ///////////////////////////////////////////////////////////////////////////
 
 //Necesario para cargar las definiciones basicas de Arduino
+/*
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
 #include "WProgram.h"
 #endif
+*/
 
 //Definicion de crono
 #include "crono.h"
@@ -32,17 +34,18 @@
 //Constructor por defecto
 Crono::Crono() {
 	// Start.
+  tipo = 0; // por defecto el cronometro es en millis
 	restart(); //=> this -> restart();
 }
 
-Crono::Crono(int tipo) {
+Crono::Crono(int type) {
   // Start.
-  _tipo = tipo;
+  tipo = type;
   restart(); 
 }
 
 void Crono::restart() {
-  if(_tipo == 0){
+  if(tipo == 0){
     _startTime = millis();
   }
   else {
@@ -56,207 +59,140 @@ bool Crono::isActive() {
   return _isActive;
 }
 
-// à revoir les elapse2
 double Crono::elapse2millis() {
-  if(_tipo == 0){
+  if(_isActive){
+    if(tipo == 0){
+      unsigned long tiempo = millis();
+      return (double) (tiempo - _startTime);
+    }
     unsigned long tiempo = millis();
-    return (double) (tiempo - _startTime);
+    return (double) (tiempo - _startTime/1000);
   }
-  unsigned long tiempo = micros();
-  return (double) (tiempo - _startTime);
+  if(tipo == 0){
+    return (double) (_stopTime - _startTime);
+  }
+  return (double) (_stopTime - _startTime)/1000;
 }
 
 double Crono::elapse2micros() {
-  if(_tipo == 0){
-    unsigned long tiempo = millis();
+  if(_isActive){
+    if(tipo == 0){
+      unsigned long tiempo = micros();
+      return (double) (tiempo - _startTime*1000);
+    }
+    unsigned long tiempo = micros();
     return (double) (tiempo - _startTime);
   }
-  unsigned long tiempo = micros();
-  return (double) (tiempo - _startTime);
-}
-
-double Crono::elapse2seconds() {
-  return _startTime/1000;
-}
-
-double Crono::stop2millis() {
-  if(_tipo == 0){
-    return (double) (_stopTime - _startTime);
-  }
-  return (double) ((_stopTime - _startTime)/1000);  
-  
-}
-
-double Crono::stop2micros() {
-  if(_tipo == 0){
-    return (double) ((_stopTime - _startTime)*1000);
+  if(tipo == 0){
+    return (double) (_stopTime - _startTime)*1000;
   }
   return (double) (_stopTime - _startTime);
 }
 
-double Crono::stop2seconds() {
-  if(_tipo == 0){
-    return (double) ((_stopTime - _startTime)/1000);
+double Crono::elapse2seconds() {
+  if(_isActive){
+    if(tipo == 0){
+      unsigned long tiempo = millis()/1000;
+      return (double) (tiempo - _startTime/1000);
+    }
+    unsigned long tiempo = millis()/1000;
+    return (double) (tiempo - _startTime/1000000);
   }
-  return (double) ((_stopTime - _startTime)/1000000);
+  if(tipo == 0){
+    return (double) (_stopTime - _startTime)/1000;
+  }
+  return (double) (_stopTime - _startTime)/1000000;
+}
+
+double Crono::stop2millis() {
+  _isActive = false;
+  tipo = 0;
+  _stopTime = millis();
+  return elapse2millis();
+}
+
+double Crono::stop2micros() {
+  _isActive = false;
+  tipo = 1;
+  _stopTime = micros();
+  return elapse2micros();
+}
+
+double Crono::stop2seconds() {
+  _isActive = false;
+  tipo = 0;
+  _stopTime = millis();
+  return elapse2millis()/1000;
 }
 
 bool Crono::hasPassedMillis(double timeout) {
-  if(_tipo == 0){
-    if(_startTime > timeout){
-      return true;
-    }
-    return false;
-  }
-  timeout = timeout*1000;
-  if(_startTime > timeout){
-    return true;
-  }
-  return false;
+  return (elapse2millis() >= timeout);
 }
 
 bool Crono::hasPassedMillis(unsigned long timeout) {
-  if(_tipo == 0){
-    if(_startTime > timeout){
-      return true;
-    }
-    return false;
-  }
-  timeout = timeout*1000;
-  if(_startTime > timeout){
-    return true;
-  }
-  return false;
+  return (elapse2millis() >= (double) timeout);
 }
 
 bool Crono::hasPassedSeconds(double timeout) {
-  if(_tipo == 0){
-    timeout = timeout*1000;
-    if(_startTime > timeout){
-      return true;
-    }
-    return false;
-  }
-  timeout = timeout*1000000;
-  if(_startTime > timeout){
-    return true;
-  }
-  return false;
+  return (elapse2seconds() >= timeout);
 }
 
 bool Crono::hasPassedSeconds(unsigned long timeout) {
-  if(_tipo == 0){
-    timeout = timeout*1000;
-    if(_startTime > timeout){
-      return true;
-    }
-    return false;
-  }
-  timeout = timeout*1000000;
-  if(_startTime > timeout){
-    return true;
-  }
-  return false;
+  return (elapse2seconds() >= (double) timeout);
 }
 
 bool Crono::hasPassedMillis(double timeout, bool restartIfPassed) {
-  if(_tipo == 0){
-    if(_startTime > timeout){
-      if(restartIfPassed){
-        _startTime = 0;
-      }
-      return true;
-    }
-    return false;
+  bool hasPassed = hasPassedMillis(timeout);
+  if(hasPassed && restartIfPassed){
+    restart();
   }
-  timeout = timeout*1000;
-  if(_startTime > timeout){
-    if(restartIfPassed){
-      _startTime = 0;
-    }
-    return true;
-  }
-  return false;
+  return hasPassed;
 }
 
 bool Crono::hasPassedMillis(unsigned long timeout, bool restartIfPassed) {
-  if(_tipo == 0){
-    if(_startTime > timeout){
-      if(restartIfPassed){
-        _startTime = 0;
-      }
-      return true;
-    }
-    return false;
+  bool hasPassed = hasPassedMillis(timeout);
+  if(hasPassed && restartIfPassed){
+    restart();
   }
-  timeout = timeout*1000;
-  if(_startTime > timeout){
-    if(restartIfPassed){
-      _startTime = 0;
-    }
-    return true;
-  }
-  return false;
+  return hasPassed;
 }
 
 bool Crono::hasPassedSeconds(double timeout, bool restartIfPassed) {
-  if(_startTime/1000 > timeout){
-    if(restartIfPassed){
-      _startTime = 0;
-    }
-    return true;
+  bool hasPassed = hasPassedSeconds(timeout);
+  if(hasPassed && restartIfPassed){
+    restart();
   }
-  return false;
+  return hasPassed;
 }
 
 bool Crono::hasPassedSeconds(unsigned long timeout, bool restartIfPassed) {
-  if(_startTime/1000 > timeout){
-    if(restartIfPassed){
-      _startTime = 0;
-    }
-    return true;
+  bool hasPassed = hasPassedSeconds(timeout);
+  if(hasPassed && restartIfPassed){
+    restart();
   }
-  return false;
+  return hasPassed;
 }
 
 void Crono::waitMillis(double timeout) {
-  if(_tipo == 0){
-    delay(timeout);
-    restart();
+  unsigned long startToWait = millis();
+  while((millis() - startToWait) < timeout){
+    delay(1);
   }
-  timeout = timeout*1000;
-  delay(timeout);
-  restart();
 }
 
 void Crono::waitMillis(unsigned long timeout) {
-  if(_tipo == 0){
-    delay(timeout);
-    restart();
-  }
-  timeout = timeout*1000;
-  delay(timeout);
-  restart()
+  waitMillis((double) timeout);
 }
 
 void Crono::waitMillisuntil(double timeout) {
-  if(_tipo == 0){
-    delay(timeout - _startTime);
-    restart();
+  double elapsedTime = elapse2millis();
+  if (elapsedTime < timeout){
+    waitMillis(timeout - elapsedTime);
   }
-  timeout = timeout*1000;
-  delay(timeout - _startTime);
-  restart();
 }
 
-void Crono::waitMillisuntil(unsigned long int timeout) {
-  if(_tipo == 0){
-    delay(timeout - _startTime);
-    restart();
-  }
-  timeout = timeout*1000;
-  delay(timeout - _startTime);
-  restart();
+void Crono::waitMillisuntil(unsigned long timeout) {
+  waitMillisuntil((double) timeout);
 }
 
 

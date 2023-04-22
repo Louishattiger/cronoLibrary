@@ -17,11 +17,12 @@
 ///////////////////////////////////////////////////////////////////////////
 
 //Definiciones basicas
+/*
 #ifndef crono_h
 #define crono_h
 #ifdef __cplusplus
-
 #include "Arduino.h"
+*/
 
 class Crono
 {
@@ -30,13 +31,14 @@ class Crono
 	unsigned long _startTime; // marca de tiempo de referencia
 	unsigned long _stopTime;  //marca de tiempo de parada
 	bool _isActive;
-  int tipo;
+  	int tipo;
 	
 	public:
-	/// Constructor.
+	// Constructor por defecto.
 	Crono();
 
-  Crono(int tipo);
+	// Contructor con el tipo
+  	Crono(int type);
 	
 	//registra la referencia de tiempo
 	void restart();
@@ -90,8 +92,10 @@ class Crono
 	//Espera hasta que transcurra un tiempo absoluto desde que 
 	//arrancó el cronometro
 	void waitMillisuntil(double timeout);
-	void waitMillisuntil(unsigned long int timeout);
+	void waitMillisuntil(unsigned long timeout);
 };
 
+/*
 #endif // __cplusplus
 #endif // crono_h
+*/
